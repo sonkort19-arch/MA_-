@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MA Контакты</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f5f7;color:#111}
+.wrap{width:min(720px,100%);margin:0 auto;padding:18px}
+h1{font-size:28px;margin:4px 0 6px}
+.sub{color:#666;margin:0 0 18px;line-height:1.4}
+.box{background:#fff;border:1px solid #dcdfe4;border-radius:12px;padding:16px;margin-bottom:14px}
+h2{font-size:20px;margin:0 0 12px}
+label{display:block;font-weight:700;margin:0 0 7px}
+input{width:100%;height:54px;border:1px solid #bfc5cc;border-radius:9px;padding:0 14px;font-size:21px;outline:none}
+button,.btn{width:100%;min-height:54px;border:0;border-radius:9px;padding:12px 14px;font-size:18px;font-weight:700;cursor:pointer;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;margin-top:10px}
+.primary{background:#111;color:#fff}
+.secondary{background:#e9edf2;color:#111}
+.status{min-height:22px;margin-top:10px;color:#087a39;font-weight:700;line-height:1.35}
+.hint{margin:10px 0 0;color:#666;font-size:14px;line-height:1.4}
+.qr{width:236px;height:236px;margin:12px auto;padding:8px;background:#fff;display:block;object-fit:contain}
+.business{text-align:center;font-size:18px;line-height:1.5;font-weight:700}
+.small{font-size:13px;color:#777;text-align:center}
+@media(max-width:520px){.wrap{padding:12px}h1{font-size:24px}.box{padding:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>MA Контакты</h1>
+  <p class="sub">Быстро сохранить номер клиента и ваш рабочий контакт.</p>
+
+  <section class="box">
+    <h2>1. Сохранить клиента</h2>
+    <label for="clientPhone">Номер клиента</label>
+    <input id="clientPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 999 123-45-67">
+    <button class="primary" id="saveClient">Сохранить клиента</button>
+    <button class="secondary" id="pastePhone">Вставить номер</button>
+    <div class="status" id="clientStatus"></div>
+    <p class="hint">Контакт создаётся как «Клиент 1», «Клиент 2» и т. д. Телефон откроет файл контакта .VCF — останется подтвердить добавление.</p>
+  </section>
+
+  <section class="box">
+    <h2>2. Клиент сохраняет вас</h2>
+    <div class="business">Мобильный Ангел<br>+7 988 873-00-07</div>
+
+    <img class="qr" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAdgAAAHYAQAAAADGosQ0AAAEcUlEQVR4nO1c225jQQizV+f/f9n7AIZJH3bbqhehIZWa5PRYCaJcDUPh048/n4cudrGLXexi//N4ADBeiqKYzwBAoV6AIgD13TPlvQ37AEAoEWCqliIEKFVJUIw/Un33SHlvwz4AAAJWHECRsIYJUSAEUKlx5q0T5b0ZS7K9r5D+GOGoaTv++s9d7M9gBYU+JYICwdCxSIESy8a/9HMX+33Y8M+pNRGqaIsIxWHG6aB53j1S3iuxJMP/wiaaeTLDU4uy52bdPVjei7A8HG44Y8pBOJOqSKezdDod9ER5b8M+sP4QKRVFpWJpPUdV1Gl01k8T5b0NS/kXrGGlkkvth/Ui3HeY8UR5b8NCynib+bPfyT+q7Et1ryBJE+W9Ddv9q2hwKPzyWefaM0efI4Pxb37nxX7gIekw07ZmpZ2iNN+3r/3Owob9Mj2xXBJJzEjb1510bf95Djb6kpFAMfpWWQGHObOzLgCokDxV3puwDxxzjxYGHXGzHg6jfeGONn8ehI3CF0A2mSH6BUK50fPoKknrn2dgo8ccCfFL2tyWyrRwuYOpqI9HynsbNvwz7HRdBcE9jKR/q3UV/wza/vMQbPYny4CrmaXScJD9zpvFYPp/8Tsv9mPYUC9TuzmYw6h0CTmtUjlmbfwdhhXhhIo1pkGXRNF3ZvprX/jt77zYd2N5pNBuZJUrTrP1sJ2KUpwr7z3YY1ySMvUrmDBER2HR8x2uiifKexs2+cFm9Ku6PehA1FR01U+bX03CMpkFkXhlBN3OAjOxjpbl9p+HYGN/wZG2RmKzJ0mZ6kctLrDUP1HeK7En/1tN6GYGPURZLejsVI+V9yKs+QV0yK22Rqpa1XrOy8vvz8FCL8x+Efkqfj8GAGpkJ64Ly++PwYqQMsdij9ghrDbDMNA0AzZ/noIt13yshVYt1G+PGWhT/zPlvRErSHJe3Ou9iMkOeEIW5ce58xtTsE8+08xg9rJKoRRgSpA6twpHynsj1gxvjuXU3GTuDwbXQOXOqCTufPsU7AN3k5WW6u5zrpV1hG6CYePvGOwDuLh94fYBwEtJnps9eMLtbwzCxkqZWLGWhECyd8xy+M4DWuufp2C7JOprHo7NekhVENMEYfjyifLehvVUZL7D6aDPY5Eyv04SeOcnh2EZOwwVYvsG5hRWNqElyBMcg+W9Buv93zoHycdteFWwZp7h+coArv2OwRKufwF4XjJOy/FY+xtGSdu/GoINfjCzrKySsk1ZC0m5nJJ/iBN2Nr8ahI3mY044ZyBWs/reORLBs6c1Vt77sKoU+tzmzm1vArFfCJqKWP88BHueH4vj2dso/uUepq9tfjUI65NTcMzhSIdNowthj3V8xecu9tuxb86PpVmFPufsWPvuCeiNv0Owz/Ga6HEcyhxhccC9m5ILohPlvQ176tfdC9EzGpFIMQa0+hg07PzVLKwT5eNIBgGsVMrPnr7b80WnYIP/jdepwTxqw32Pgz7qTsevfufFvv9xnh/7k5+72MUudrGL/ffjL7UTtnUM6l8NAAAAAElFTkSuQmCC" alt="QR-код контакта Мобильный Ангел">
+    <div class="small">Клиент сканирует QR камерой телефона</div>
+
+    <button class="primary" id="saveBusiness">Сохранить «Мобильный Ангел»</button>
+    <button class="secondary" id="copyBusiness">Скопировать номер</button>
+    <div class="status" id="businessStatus"></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  const BUSINESS_NAME = 'Мобильный Ангел';
+  const BUSINESS_PHONE = '+79888730007';
+  const clientPhone = document.getElementById('clientPhone');
+  const clientStatus = document.getElementById('clientStatus');
+  const businessStatus = document.getElementById('businessStatus');
+  let clientCounter = Number(localStorage.getItem('maClientCounter') || '0');
+
+  function digits(v){ return (v || '').replace(/\D/g,''); }
+  function normalizePhone(v){
+    let d = digits(v);
+    if(d.length === 11 && d[0] === '8') d = '7' + d.slice(1);
+    if(d.length === 10) d = '7' + d;
+    if(d.length === 11 && d[0] === '7') return '+' + d;
+    return v.trim();
+  }
+  function downloadVCard(filename, name, phone){
+    const vcf = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nN:${name};;;;\nTEL;TYPE=CELL:${normalizePhone(phone)}\nEND:VCARD`;
+    const blob = new Blob([vcf], {type:'text/vcard;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename + '.vcf';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 1500);
+  }
+
+  document.getElementById('saveClient').addEventListener('click', ()=>{
+    const phone = clientPhone.value.trim();
+    if(digits(phone).length < 10){
+      clientStatus.style.color='#b00020';
+      clientStatus.textContent='Введите правильный номер клиента.';
+      return;
+    }
+    clientCounter++;
+    localStorage.setItem('maClientCounter', String(clientCounter));
+    const name = 'Клиент ' + clientCounter;
+    downloadVCard(name, name, phone);
+    clientStatus.style.color='#087a39';
+    clientStatus.textContent=name + ' — контакт подготовлен.';
+    clientPhone.value='';
+    clientPhone.focus();
+  });
+
+  document.getElementById('pastePhone').addEventListener('click', async ()=>{
+    try{
+      clientPhone.value = await navigator.clipboard.readText();
+      clientPhone.focus();
+      clientStatus.textContent='';
+    }catch(e){
+      clientStatus.style.color='#b00020';
+      clientStatus.textContent='Зажмите поле номера и выберите «Вставить».';
+    }
+  });
+
+  document.getElementById('saveBusiness').addEventListener('click', ()=>{
+    downloadVCard('Мобильный Ангел', BUSINESS_NAME, BUSINESS_PHONE);
+    businessStatus.style.color='#087a39';
+    businessStatus.textContent='Контакт «Мобильный Ангел» подготовлен.';
+  });
+
+  document.getElementById('copyBusiness').addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(BUSINESS_PHONE);
+      businessStatus.style.color='#087a39';
+      businessStatus.textContent='Номер скопирован.';
+    }catch(e){
+      businessStatus.style.color='#b00020';
+      businessStatus.textContent='Не удалось скопировать автоматически.';
+    }
+  });
+
+  clientPhone.addEventListener('keydown', e=>{
+    if(e.key === 'Enter') document.getElementById('saveClient').click();
+  });
+})();
+</script>
+</body>
+</html>
