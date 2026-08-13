@@ -1,0 +1,1132 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>QR Контакты</title>
+
+<meta name="theme-color" content="#111111">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="QR Контакты">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+
+<style>
+*{box-sizing:border-box}
+:root{
+  --bg:#f3f4f6;
+  --panel:#fff;
+  --text:#111;
+  --muted:#6b7280;
+  --line:#d8dde3;
+  --accent:#111;
+  --accentText:#fff;
+  --radius:14px;
+  --qrSize:330px;
+}
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  background:var(--bg);
+}
+body.dark{
+  --bg:#111315;
+  --panel:#1a1d20;
+  --text:#f5f5f5;
+  --muted:#a8afb8;
+  --line:#343a40;
+}
+body{
+  margin:0;
+  min-height:100vh;
+  min-height:100dvh;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior-y:none;
+}
+button,input,select,textarea{
+  font:inherit;
+  font-size:16px; /* iPhone: не увеличивать страницу при фокусе */
+}
+button,select{
+  touch-action:manipulation;
+}
+button{cursor:pointer}
+.wrap{
+  width:min(1050px,100%);
+  margin:0 auto;
+  padding:
+    max(14px, env(safe-area-inset-top))
+    max(14px, env(safe-area-inset-right))
+    max(18px, env(safe-area-inset-bottom))
+    max(14px, env(safe-area-inset-left));
+}
+.header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:16px;
+}
+.header-left{
+  display:flex;
+  align-items:center;
+  min-width:0;
+}
+.header-text{min-width:0}
+.header-text h1{
+  margin:0;
+  font-size:25px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.header-text .phone{
+  margin-top:4px;
+  color:var(--muted);
+  font-size:17px;
+  font-weight:700;
+}
+.header-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.btn{
+  min-height:48px;
+  border:0;
+  border-radius:11px;
+  padding:0 15px;
+  font-weight:700;
+  background:var(--accent);
+  color:var(--accentText);
+}
+.btn:active,.action:active,.tab:active,.small-btn:active{transform:scale(.985)}
+.btn.light{
+  background:var(--panel);
+  color:var(--text);
+  border:1px solid var(--line);
+}
+.service-switch{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:11px;
+  height:48px;
+  padding:0 36px 0 12px;
+  color:var(--text);
+  font-weight:700;
+  min-width:190px;
+}
+.workspace{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+.qr-card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:20px;
+  text-align:center;
+}
+.qr-card h2{
+  margin:0 0 7px;
+  font-size:22px;
+}
+.qr-card p{
+  margin:0 auto 14px;
+  max-width:360px;
+  color:var(--muted);
+  font-size:14px;
+  line-height:1.45;
+}
+.qrbox{
+  width:var(--qrSize);
+  height:var(--qrSize);
+  max-width:100%;
+  margin:0 auto 15px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:#fff;
+  border-radius:8px;
+  overflow:hidden;
+}
+.qrbox img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+.card-actions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+}
+.action{
+  width:100%;
+  min-height:52px;
+  border:0;
+  border-radius:11px;
+  background:var(--accent);
+  color:var(--accentText);
+  font-weight:700;
+  font-size:17px;
+}
+.hidden{display:none!important}
+
+/* iPhone sheet-style settings */
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.48);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
+  z-index:100;
+}
+.overlay.open{display:flex}
+.modal{
+  width:min(850px,100%);
+  max-height:94dvh;
+  overflow:auto;
+  background:var(--panel);
+  border-radius:18px;
+  border:1px solid var(--line);
+  color:var(--text);
+  -webkit-overflow-scrolling:touch;
+}
+.modal-head{
+  position:sticky;
+  top:0;
+  z-index:4;
+  background:var(--panel);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px 18px;
+  border-bottom:1px solid var(--line);
+}
+.modal-head h2{margin:0;font-size:23px}
+.close{
+  width:44px;
+  height:44px;
+  border:0;
+  border-radius:50%;
+  background:var(--bg);
+  color:var(--text);
+  font-size:24px;
+}
+.tabs{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+  padding:10px 16px;
+  border-bottom:1px solid var(--line);
+  background:var(--panel);
+  position:sticky;
+  top:77px;
+  z-index:3;
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:0 0 auto;
+  min-height:44px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--text);
+  border-radius:10px;
+  padding:0 12px;
+  font-weight:700;
+}
+.tab.active{
+  background:var(--accent);
+  color:var(--accentText);
+  border-color:var(--accent);
+}
+.tab-pane{display:none;padding:18px}
+.tab-pane.active{display:block}
+.section-title{font-weight:800;margin:4px 0 12px;font-size:17px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:block;font-weight:700;margin:12px 0 6px}
+input,select,textarea{
+  width:100%;
+  min-height:48px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--text);
+  border-radius:10px;
+  padding:11px 12px;
+}
+textarea{min-height:90px;resize:vertical}
+.check{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:14px 0;
+  min-height:44px;
+  font-weight:700;
+}
+.check input{width:22px;height:22px;min-height:0}
+.note{font-size:13px;color:var(--muted);line-height:1.45;margin-top:9px}
+.small-btn{
+  min-height:44px;
+  border:1px solid var(--line);
+  background:var(--panel);
+  color:var(--text);
+  border-radius:10px;
+  padding:0 12px;
+  font-weight:700;
+}
+.small-btn.danger{color:#b00020}
+.list{display:flex;flex-direction:column;gap:8px}
+.service-item{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  align-items:center;
+}
+.service-item strong{display:block}
+.service-item span{color:var(--muted);font-size:14px}
+.service-buttons{display:flex;gap:6px}
+.form-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:16px;
+}
+.status{min-height:20px;margin-top:10px;color:#16803c;font-weight:700}
+.color-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.color-input{height:48px;padding:4px}
+hr{border:0;border-top:1px solid var(--line);margin:18px 0}
+
+/* Sticky Save in iPhone settings */
+.settings-footer{
+  position:sticky;
+  bottom:0;
+  z-index:5;
+  padding:
+    10px
+    18px
+    max(10px, env(safe-area-inset-bottom));
+  background:linear-gradient(to top,var(--panel) 75%,transparent);
+}
+.settings-footer .btn{width:100%;min-height:52px}
+
+/* PIN */
+.lock-screen{
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  z-index:300;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:
+    max(20px,env(safe-area-inset-top))
+    max(20px,env(safe-area-inset-right))
+    max(20px,env(safe-area-inset-bottom))
+    max(20px,env(safe-area-inset-left));
+}
+.lock-screen.open{display:flex}
+.lock-card{
+  width:min(380px,100%);
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:22px;
+  text-align:center;
+}
+.lock-card img{width:72px;height:72px;border-radius:16px}
+.lock-card h2{margin:12px 0 6px}
+.lock-card p{color:var(--muted);font-size:14px}
+.lock-card input{
+  text-align:center;
+  font-size:22px;
+  letter-spacing:5px;
+}
+
+/* iPhone / narrow displays */
+@media(max-width:760px){
+  .wrap{
+    padding:
+      max(12px, env(safe-area-inset-top))
+      max(12px, env(safe-area-inset-right))
+      max(18px, env(safe-area-inset-bottom))
+      max(12px, env(safe-area-inset-left));
+  }
+  .header{
+    align-items:stretch;
+    flex-direction:column;
+  }
+  .header-left{padding:2px 2px 0}
+  .header-text h1{font-size:23px}
+  .header-actions{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto auto;
+    width:100%;
+  }
+  .service-switch{
+    min-width:0;
+    width:100%;
+  }
+  .workspace{grid-template-columns:1fr!important}
+  .qr-card{padding:16px}
+  .qrbox{
+    width:min(var(--qrSize),calc(100vw - 64px));
+    height:min(var(--qrSize),calc(100vw - 64px));
+  }
+  .row,.color-row{grid-template-columns:1fr}
+  .overlay{
+    padding:0;
+    align-items:flex-end;
+  }
+  .modal{
+    width:100%;
+    height:96dvh;
+    max-height:96dvh;
+    border-radius:20px 20px 0 0;
+    border-left:0;
+    border-right:0;
+    border-bottom:0;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  .modal-head{
+    padding-top:14px;
+  }
+  .tabs{top:77px}
+  .tab-pane{padding:16px}
+  .service-item{
+    grid-template-columns:1fr;
+  }
+  .service-buttons{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+  }
+  .small-btn{width:100%}
+}
+@media(max-width:390px){
+  .header-actions{
+    grid-template-columns:1fr 1fr;
+  }
+  .service-switch{
+    grid-column:1/-1;
+  }
+}
+
+/* Home-screen standalone mode */
+@media(display-mode:standalone){
+  .wrap{
+    padding-top:max(14px, env(safe-area-inset-top));
+  }
+}
+
+/* Print / AirPrint */
+@media print{
+  body{background:#fff!important;color:#000!important}
+  .no-print,.overlay,.lock-screen{display:none!important}
+  .wrap{width:100%;padding:0}
+  .header{margin-bottom:8mm}
+  .workspace{grid-template-columns:1fr 1fr!important;gap:8mm}
+  .qr-card{
+    display:block!important;
+    border:1px solid #000;
+    border-radius:0;
+    break-inside:avoid;
+    background:#fff!important;
+    color:#000!important;
+  }
+  .qr-card p{color:#000!important}
+  .qrbox{width:70mm!important;height:70mm!important}
+}
+</style>
+</head>
+
+<body>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <img src="apple-touch-icon.png" alt="">
+    <h2>Настройки защищены</h2>
+    <p>Введите PIN-код</p>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="8" placeholder="••••">
+    <button class="btn" id="unlockBtn" style="width:100%;margin-top:10px">Открыть настройки</button>
+    <div class="status" id="pinStatus"></div>
+  </div>
+</div>
+
+<div class="wrap">
+  <header class="header">
+    <div class="header-left">
+      <div class="header-text">
+        <h1 id="displayName">Nova</h1>
+        <div class="phone" id="displayPhone">+7 988 873-00-07</div>
+      </div>
+    </div>
+
+    <div class="header-actions no-print">
+      <select id="serviceSwitch" class="service-switch"></select>
+      <button class="btn light" id="printBtn">Печать</button>
+      <button class="btn" id="settingsBtn">Настройки</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <section class="qr-card" id="contactCard">
+      <h2 id="contactTitle">Сохранить наш номер</h2>
+      <p id="contactSubtitle">Клиент сканирует QR и сохраняет контакт.</p>
+      <div class="qrbox"><img id="contactQr" alt="QR контакта"></div>
+      <div class="card-actions no-print">
+        <button class="action" id="saveContactBtn">Сохранить контакт</button>
+      </div>
+    </section>
+
+    <section class="qr-card" id="smsCard">
+      <h2 id="smsTitle">Отправить SMS</h2>
+      <p id="smsSubtitle">Клиент сканирует QR и открывает SMS на рабочий номер.</p>
+      <div class="qrbox"><img id="smsQr" alt="QR SMS"></div>
+      <div class="card-actions no-print">
+        <button class="action" id="openSmsBtn">Открыть SMS</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="settingsOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h2>Настройки</h2>
+      <button class="close" id="closeSettings">×</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="services">Сервисы</button>
+      <button class="tab" data-tab="contact">Контакт</button>
+      <button class="tab" data-tab="sms">SMS</button>
+      <button class="tab" data-tab="qr">QR</button>
+      <button class="tab" data-tab="view">Экран</button>
+      <button class="tab" data-tab="print">Печать</button>
+      <button class="tab" data-tab="security">Защита</button>
+      <button class="tab" data-tab="data">Данные</button>
+    </div>
+
+    <section class="tab-pane active" id="tab-services">
+      <div class="section-title">Сервисы / точки</div>
+      <div class="list" id="serviceList"></div>
+      <hr>
+      <div class="row">
+        <div>
+          <label>Название сервиса</label>
+          <input id="newServiceName" placeholder="Например: Nova">
+        </div>
+        <div>
+          <label>Рабочий номер</label>
+          <input id="newServicePhone" type="tel" inputmode="tel" placeholder="89888730007">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn" id="addServiceBtn">Добавить сервис</button>
+      </div>
+    </section>
+
+    <section class="tab-pane" id="tab-contact">
+      <div class="section-title">Контакт у клиента</div>
+      <label>Имя контакта</label>
+      <input id="contactName">
+      <label>Организация</label>
+      <input id="contactOrg">
+      <div class="row">
+        <div>
+          <label>Дополнительный номер</label>
+          <input id="contactPhone2" type="tel" inputmode="tel">
+        </div>
+        <div>
+          <label>Сайт</label>
+          <input id="contactWebsite" type="url" placeholder="https://...">
+        </div>
+      </div>
+      <label>Адрес</label>
+      <input id="contactAddress">
+      <label>Заметка в контакте</label>
+      <textarea id="contactNote"></textarea>
+    </section>
+
+    <section class="tab-pane" id="tab-sms">
+      <div class="section-title">SMS</div>
+      <label>Текст SMS</label>
+      <input id="smsText">
+      <label class="check"><input type="checkbox" id="showSmsQr"> Показывать QR для SMS</label>
+      <label>Заголовок блока</label>
+      <input id="smsTitleInput">
+      <label>Подпись под заголовком</label>
+      <textarea id="smsSubtitleInput"></textarea>
+      <div class="note">
+        На iPhone Apple официально гарантирует открытие приложения «Сообщения» с номером получателя.
+        Автоматическая подстановка текста сообщения через URL не гарантируется системой.
+      </div>
+    </section>
+
+    <section class="tab-pane" id="tab-qr">
+      <div class="section-title">QR-коды</div>
+      <label class="check"><input type="checkbox" id="showContactQr"> Показывать QR контакта</label>
+      <label>Размер QR на экране</label>
+      <select id="qrSize">
+        <option value="240">Маленький — 240 px</option>
+        <option value="280">Средний — 280 px</option>
+        <option value="330">Большой — 330 px</option>
+        <option value="380">Очень большой — 380 px</option>
+      </select>
+      <label>Заголовок QR контакта</label>
+      <input id="contactTitleInput">
+      <label>Подпись QR контакта</label>
+      <textarea id="contactSubtitleInput"></textarea>
+    </section>
+
+    <section class="tab-pane" id="tab-view">
+      <div class="section-title">Рабочий экран</div>
+      <label class="check"><input type="checkbox" id="showServiceName"> Показывать название сервиса</label>
+      <label class="check"><input type="checkbox" id="showServicePhone"> Показывать номер сервиса</label>
+      <label class="check"><input type="checkbox" id="showButtons"> Показывать кнопки под QR</label>
+      <label>Расположение QR</label>
+      <select id="layoutMode">
+        <option value="two">Два рядом на большом экране</option>
+        <option value="one">Всегда по одному</option>
+      </select>
+      <label>Тема</label>
+      <select id="themeMode">
+        <option value="light">Светлая</option>
+        <option value="dark">Тёмная</option>
+      </select>
+      <div class="color-row">
+        <div>
+          <label>Основной цвет</label>
+          <input id="accentColor" type="color" class="color-input">
+        </div>
+        <div>
+          <label>Скругление блоков</label>
+          <select id="radiusSize">
+            <option value="0">Без скругления</option>
+            <option value="8">8 px</option>
+            <option value="14">14 px</option>
+            <option value="22">22 px</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-pane" id="tab-print">
+      <div class="section-title">Печать / AirPrint</div>
+      <label>Что печатать</label>
+      <select id="printMode">
+        <option value="both">Оба QR</option>
+        <option value="contact">Только контакт</option>
+        <option value="sms">Только SMS</option>
+      </select>
+      <label>Размер QR на печати</label>
+      <select id="printQrSize">
+        <option value="55">55 мм</option>
+        <option value="70">70 мм</option>
+        <option value="85">85 мм</option>
+      </select>
+      <label class="check"><input type="checkbox" id="printServiceName"> Печатать название сервиса</label>
+      <label class="check"><input type="checkbox" id="printPhone"> Печатать рабочий номер</label>
+    </section>
+
+    <section class="tab-pane" id="tab-security">
+      <div class="section-title">PIN на настройки</div>
+      <label class="check"><input type="checkbox" id="pinEnabled"> Включить PIN</label>
+      <label>PIN-код</label>
+      <input id="pinCode" type="password" inputmode="numeric" maxlength="8" placeholder="Например: 1234">
+      <div class="note">PIN действует на этом устройстве и защищает только вход в настройки приложения.</div>
+    </section>
+
+    <section class="tab-pane" id="tab-data">
+      <div class="section-title">Резервная копия</div>
+      <div class="form-actions">
+        <button class="small-btn" id="exportBtn">Экспорт настроек</button>
+        <button class="small-btn" id="importBtn">Импорт настроек</button>
+        <input id="importFile" type="file" accept=".json,application/json" class="hidden">
+        <button class="small-btn danger" id="resetAllBtn">Сбросить всё</button>
+      </div>
+      <div class="note">Экспорт позволяет перенести настройки на другой iPhone, телефон или компьютер.</div>
+    </section>
+
+    <div class="settings-footer">
+      <button class="btn" id="saveAllBtn">Сохранить все настройки</button>
+      <div class="status" id="settingsStatus"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const DEFAULT={
+    activeServiceId:"nova",
+    services:[
+      {id:"nova",name:"Nova",phone:"89888730007"},
+      {id:"angel",name:"Мобильный Ангел",phone:"89888703135"}
+    ],
+    contact:{
+      name:"Ремонт телефонов и компьютеров",
+      org:"Ремонт телефонов и компьютеров",
+      phone2:"",
+      website:"",
+      address:"",
+      note:""
+    },
+    sms:{
+      text:".",
+      show:true,
+      title:"Отправить SMS",
+      subtitle:"Клиент сканирует QR и открывает SMS на рабочий номер."
+    },
+    qr:{
+      showContact:true,
+      size:330,
+      contactTitle:"Сохранить наш номер",
+      contactSubtitle:"Клиент сканирует QR и сохраняет контакт."
+    },
+    view:{
+      showServiceName:true,
+      showServicePhone:true,
+      showButtons:true,
+      layout:"two",
+      theme:"light",
+      accent:"#111111",
+      radius:14
+    },
+    print:{
+      mode:"both",
+      qrSize:70,
+      serviceName:true,
+      phone:true
+    },
+    security:{
+      pinEnabled:false,
+      pin:""
+    }
+  };
+
+  const $=id=>document.getElementById(id);
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform==="MacIntel" && navigator.maxTouchPoints>1);
+
+  let state=loadState();
+
+  function clone(x){return JSON.parse(JSON.stringify(x))}
+  function merge(defaults,saved){
+    if(Array.isArray(defaults)) return Array.isArray(saved)?saved:clone(defaults);
+    if(defaults&&typeof defaults==="object"){
+      const out={};
+      for(const k in defaults) out[k]=merge(defaults[k],saved?saved[k]:undefined);
+      if(saved&&typeof saved==="object"){
+        for(const k in saved) if(!(k in out)) out[k]=saved[k];
+      }
+      return out;
+    }
+    return saved===undefined?defaults:saved;
+  }
+  function loadState(){
+    try{
+      const saved=JSON.parse(localStorage.getItem("qrContactSettings"));
+      return merge(DEFAULT,saved);
+    }catch(e){return clone(DEFAULT)}
+  }
+  function saveState(){localStorage.setItem("qrContactSettings",JSON.stringify(state))}
+  function digits(v){return String(v||"").replace(/\D/g,"")}
+  function normalize(v){
+    let d=digits(v);
+    if(d.length===11&&d[0]==="8")d="7"+d.slice(1);
+    if(d.length===10)d="7"+d;
+    return d;
+  }
+  function pretty(v){
+    const d=normalize(v);
+    if(d.length===11&&d[0]==="7"){
+      return "+7 "+d.slice(1,4)+" "+d.slice(4,7)+"-"+d.slice(7,9)+"-"+d.slice(9,11);
+    }
+    return v;
+  }
+  function activeService(){
+    return state.services.find(s=>s.id===state.activeServiceId)||state.services[0];
+  }
+  function escapeVCard(v){
+    return String(v||"")
+      .replace(/\\/g,"\\\\")
+      .replace(/\n/g,"\\n")
+      .replace(/,/g,"\\,")
+      .replace(/;/g,"\\;");
+  }
+  function vcard(){
+    const s=activeService(),c=state.contact;
+    const lines=[
+      "BEGIN:VCARD","VERSION:3.0",
+      "FN:"+escapeVCard(c.name),
+      "N:"+escapeVCard(c.name)+";;;;",
+      "ORG:"+escapeVCard(c.org||c.name),
+      "TEL;TYPE=CELL:+"+normalize(s.phone)
+    ];
+    if(c.phone2&&normalize(c.phone2))lines.push("TEL;TYPE=WORK:+"+normalize(c.phone2));
+    if(c.website)lines.push("URL:"+escapeVCard(c.website));
+    if(c.address)lines.push("ADR;TYPE=WORK:;;"+escapeVCard(c.address)+";;;;");
+    if(c.note)lines.push("NOTE:"+escapeVCard(c.note));
+    lines.push("END:VCARD");
+    return lines.join("\n");
+  }
+
+  /* QR SMS:
+     Для iPhone используем официальный sms:NUMBER без текста.
+     Для остальных устройств сохраняем SMSTO с точкой. */
+  function smsQrPayload(){
+    const s=activeService();
+    if(isIOS) return "sms:+"+normalize(s.phone);
+    return "SMSTO:+"+normalize(s.phone)+":"+state.sms.text;
+  }
+  function qrUrl(payload){
+    return "https://api.qrserver.com/v1/create-qr-code/?size=700x700&margin=20&data="+encodeURIComponent(payload);
+  }
+
+  function applyTheme(){
+    document.body.classList.toggle("dark",state.view.theme==="dark");
+    document.documentElement.style.setProperty("--accent",state.view.accent);
+    const darkAccent=["#000000","#111111","#222222"].includes(state.view.accent.toLowerCase());
+    document.documentElement.style.setProperty("--accentText",darkAccent?"#ffffff":"#111111");
+    document.documentElement.style.setProperty("--radius",state.view.radius+"px");
+    document.documentElement.style.setProperty("--qrSize",state.qr.size+"px");
+  }
+
+  function renderMain(){
+    if(!state.services.length){
+      state.services=[clone(DEFAULT.services[0])];
+      state.activeServiceId=state.services[0].id;
+    }
+    if(!state.services.some(s=>s.id===state.activeServiceId)){
+      state.activeServiceId=state.services[0].id;
+    }
+
+    const s=activeService();
+    applyTheme();
+
+    $("displayName").textContent=s.name;
+    $("displayPhone").textContent=pretty(s.phone);
+    $("displayName").classList.toggle("hidden",!state.view.showServiceName);
+    $("displayPhone").classList.toggle("hidden",!state.view.showServicePhone);
+
+    $("contactTitle").textContent=state.qr.contactTitle;
+    $("contactSubtitle").textContent=state.qr.contactSubtitle;
+    $("smsTitle").textContent=state.sms.title;
+    $("smsSubtitle").textContent=state.sms.subtitle;
+
+    $("contactCard").classList.toggle("hidden",!state.qr.showContact);
+    $("smsCard").classList.toggle("hidden",!state.sms.show);
+
+    if(window.innerWidth>760){
+      document.querySelector(".workspace").style.gridTemplateColumns=
+        state.view.layout==="one"?"1fr":"1fr 1fr";
+    }else{
+      document.querySelector(".workspace").style.gridTemplateColumns="1fr";
+    }
+
+    $("contactQr").src=qrUrl(vcard());
+    $("smsQr").src=qrUrl(smsQrPayload());
+
+    document.querySelectorAll(".card-actions").forEach(el=>{
+      el.classList.toggle("hidden",!state.view.showButtons)
+    });
+
+    $("serviceSwitch").innerHTML="";
+    state.services.forEach(serv=>{
+      const o=document.createElement("option");
+      o.value=serv.id;
+      o.textContent=serv.name;
+      if(serv.id===state.activeServiceId)o.selected=true;
+      $("serviceSwitch").appendChild(o);
+    });
+
+    $("saveContactBtn").onclick=()=>{
+      const blob=new Blob([vcard()],{type:"text/vcard;charset=utf-8"});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url;
+      a.download=(state.contact.name||"Контакт")+".vcf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1200);
+    };
+
+    $("openSmsBtn").onclick=()=>{
+      const phone="+"+normalize(s.phone);
+
+      /* Apple официально поддерживает sms:NUMBER.
+         Некоторые версии iOS также принимают body, но это не гарантировано.
+         Делаем попытку с точкой; если iOS её игнорирует — Messages всё равно откроется на нужный номер. */
+      if(isIOS){
+        location.href="sms:"+phone+"&body="+encodeURIComponent(state.sms.text);
+      }else{
+        location.href="sms:"+phone+"?body="+encodeURIComponent(state.sms.text);
+      }
+    };
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g,m=>({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+    }[m]));
+  }
+  function renderServicesList(){
+    $("serviceList").innerHTML="";
+    state.services.forEach(s=>{
+      const el=document.createElement("div");
+      el.className="service-item";
+      el.innerHTML=
+        '<div><strong>'+escapeHtml(s.name)+'</strong><span>'+escapeHtml(pretty(s.phone))+'</span></div>'+
+        '<div class="service-buttons">'+
+        '<button class="small-btn" data-edit="'+s.id+'">Изменить</button>'+
+        '<button class="small-btn danger" data-delete="'+s.id+'">Удалить</button>'+
+        '</div>';
+      $("serviceList").appendChild(el);
+    });
+    document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editService(b.dataset.edit));
+    document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteService(b.dataset.delete));
+  }
+  function editService(id){
+    const s=state.services.find(x=>x.id===id);
+    if(!s)return;
+    const name=prompt("Название сервиса:",s.name);
+    if(name===null)return;
+    const phone=prompt("Рабочий номер:",s.phone);
+    if(phone===null)return;
+    if(normalize(phone).length<10){alert("Проверь номер");return}
+    s.name=name.trim()||s.name;
+    s.phone=phone.trim();
+    saveState();renderSettings();renderMain();
+  }
+  function deleteService(id){
+    if(state.services.length<=1){alert("Должен остаться хотя бы один сервис.");return}
+    const s=state.services.find(x=>x.id===id);
+    if(!confirm("Удалить сервис «"+s.name+"»?"))return;
+    state.services=state.services.filter(x=>x.id!==id);
+    if(state.activeServiceId===id)state.activeServiceId=state.services[0].id;
+    saveState();renderSettings();renderMain();
+  }
+  function addService(){
+    const name=$("newServiceName").value.trim();
+    const phone=$("newServicePhone").value.trim();
+    if(!name){alert("Введите название сервиса");return}
+    if(normalize(phone).length<10){alert("Введите правильный номер");return}
+    const id="svc_"+Date.now();
+    state.services.push({id,name,phone});
+    state.activeServiceId=id;
+    $("newServiceName").value="";
+    $("newServicePhone").value="";
+    saveState();renderSettings();renderMain();
+  }
+
+  function renderSettings(){
+    renderServicesList();
+
+    $("contactName").value=state.contact.name;
+    $("contactOrg").value=state.contact.org;
+    $("contactPhone2").value=state.contact.phone2;
+    $("contactWebsite").value=state.contact.website;
+    $("contactAddress").value=state.contact.address;
+    $("contactNote").value=state.contact.note;
+
+    $("smsText").value=state.sms.text;
+    $("showSmsQr").checked=state.sms.show;
+    $("smsTitleInput").value=state.sms.title;
+    $("smsSubtitleInput").value=state.sms.subtitle;
+
+    $("showContactQr").checked=state.qr.showContact;
+    $("qrSize").value=String(state.qr.size);
+    $("contactTitleInput").value=state.qr.contactTitle;
+    $("contactSubtitleInput").value=state.qr.contactSubtitle;
+
+    $("showServiceName").checked=state.view.showServiceName;
+    $("showServicePhone").checked=state.view.showServicePhone;
+    $("showButtons").checked=state.view.showButtons;
+    $("layoutMode").value=state.view.layout;
+    $("themeMode").value=state.view.theme;
+    $("accentColor").value=state.view.accent;
+    $("radiusSize").value=String(state.view.radius);
+
+    $("printMode").value=state.print.mode;
+    $("printQrSize").value=String(state.print.qrSize);
+    $("printServiceName").checked=state.print.serviceName;
+    $("printPhone").checked=state.print.phone;
+
+    $("pinEnabled").checked=state.security.pinEnabled;
+    $("pinCode").value=state.security.pin;
+  }
+
+  function collectSettings(){
+    state.contact={
+      name:$("contactName").value.trim()||"Ремонт телефонов и компьютеров",
+      org:$("contactOrg").value.trim(),
+      phone2:$("contactPhone2").value.trim(),
+      website:$("contactWebsite").value.trim(),
+      address:$("contactAddress").value.trim(),
+      note:$("contactNote").value.trim()
+    };
+    state.sms={
+      text:$("smsText").value,
+      show:$("showSmsQr").checked,
+      title:$("smsTitleInput").value.trim()||"Отправить SMS",
+      subtitle:$("smsSubtitleInput").value.trim()
+    };
+    state.qr={
+      showContact:$("showContactQr").checked,
+      size:Number($("qrSize").value),
+      contactTitle:$("contactTitleInput").value.trim()||"Сохранить наш номер",
+      contactSubtitle:$("contactSubtitleInput").value.trim()
+    };
+    state.view={
+      showServiceName:$("showServiceName").checked,
+      showServicePhone:$("showServicePhone").checked,
+      showButtons:$("showButtons").checked,
+      layout:$("layoutMode").value,
+      theme:$("themeMode").value,
+      accent:$("accentColor").value,
+      radius:Number($("radiusSize").value)
+    };
+    state.print={
+      mode:$("printMode").value,
+      qrSize:Number($("printQrSize").value),
+      serviceName:$("printServiceName").checked,
+      phone:$("printPhone").checked
+    };
+    state.security={
+      pinEnabled:$("pinEnabled").checked,
+      pin:$("pinCode").value.trim()
+    };
+    saveState();
+    renderMain();
+    $("settingsStatus").textContent="Все настройки сохранены.";
+    setTimeout(()=>$("settingsStatus").textContent="",1800);
+  }
+
+  function openSettings(){
+    if(state.security.pinEnabled&&state.security.pin){
+      $("pinInput").value="";
+      $("pinStatus").textContent="";
+      $("lockScreen").classList.add("open");
+    }else{
+      renderSettings();
+      $("settingsOverlay").classList.add("open");
+    }
+  }
+  function unlock(){
+    if($("pinInput").value===state.security.pin){
+      $("lockScreen").classList.remove("open");
+      renderSettings();
+      $("settingsOverlay").classList.add("open");
+    }else{
+      $("pinStatus").textContent="Неверный PIN";
+    }
+  }
+
+  function preparePrint(){
+    const old={
+      c:$("contactCard").classList.contains("hidden"),
+      s:$("smsCard").classList.contains("hidden"),
+      n:$("displayName").classList.contains("hidden"),
+      p:$("displayPhone").classList.contains("hidden")
+    };
+
+    $("contactCard").classList.toggle("hidden",state.print.mode==="sms");
+    $("smsCard").classList.toggle("hidden",state.print.mode==="contact");
+    $("displayName").classList.toggle("hidden",!state.print.serviceName);
+    $("displayPhone").classList.toggle("hidden",!state.print.phone);
+
+    const st=document.createElement("style");
+    st.id="dynamicPrintStyle";
+    st.textContent="@media print{.qrbox{width:"+state.print.qrSize+"mm!important;height:"+state.print.qrSize+"mm!important}}";
+    document.head.appendChild(st);
+
+    window.print();
+
+    setTimeout(()=>{
+      $("contactCard").classList.toggle("hidden",old.c);
+      $("smsCard").classList.toggle("hidden",old.s);
+      $("displayName").classList.toggle("hidden",old.n);
+      $("displayPhone").classList.toggle("hidden",old.p);
+      st.remove();
+    },400);
+  }
+
+  function exportSettings(){
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="QR_Контакты_настройки.json";
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function importSettings(file){
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        state=merge(DEFAULT,JSON.parse(r.result));
+        saveState();renderSettings();renderMain();
+        $("settingsStatus").textContent="Настройки импортированы.";
+      }catch(e){alert("Не удалось прочитать файл настроек.")}
+    };
+    r.readAsText(file);
+  }
+
+  document.querySelectorAll(".tab").forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+      document.querySelectorAll(".tab-pane").forEach(x=>x.classList.remove("active"));
+      btn.classList.add("active");
+      $("tab-"+btn.dataset.tab).classList.add("active");
+    };
+  });
+
+  $("serviceSwitch").onchange=()=>{
+    state.activeServiceId=$("serviceSwitch").value;
+    saveState();renderMain();
+  };
+  $("settingsBtn").onclick=openSettings;
+  $("closeSettings").onclick=()=>$("settingsOverlay").classList.remove("open");
+  $("settingsOverlay").onclick=e=>{
+    if(e.target===$("settingsOverlay"))$("settingsOverlay").classList.remove("open");
+  };
+  $("unlockBtn").onclick=unlock;
+  $("pinInput").onkeydown=e=>{if(e.key==="Enter")unlock()};
+  $("addServiceBtn").onclick=addService;
+  $("saveAllBtn").onclick=collectSettings;
+  $("printBtn").onclick=preparePrint;
+  $("exportBtn").onclick=exportSettings;
+  $("importBtn").onclick=()=>$("importFile").click();
+  $("importFile").onchange=e=>{
+    if(e.target.files[0])importSettings(e.target.files[0]);
+  };
+  $("resetAllBtn").onclick=()=>{
+    if(confirm("Сбросить все настройки приложения?")){
+      state=clone(DEFAULT);
+      saveState();renderSettings();renderMain();
+      $("settingsStatus").textContent="Все настройки сброшены.";
+    }
+  };
+
+  window.addEventListener("resize",renderMain);
+  renderMain();
+})();
+</script>
+</body>
+</html>
